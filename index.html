@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fiyat Teklifi</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background: #f4f4f4; }
+    input[type="number"] { width: 70px; }
+    #search { width: 100%; padding: 8px; }
+    #submit { margin-top: 20px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+<h2>Ürün Seçimi</h2>
+
+<input id="search" placeholder="Ürün ara..." />
+
+<table>
+  <thead>
+    <tr>
+      <th>Ürün</th>
+      <th>Fiyat</th>
+      <th>Adet</th>
+    </tr>
+  </thead>
+  <tbody id="products"></tbody>
+</table>
+
+<button id="submit">Teklif Oluştur</button>
+
+<script>
+  // 🔐 TOKEN
+  const token = new URLSearchParams(window.location.search).get("token");
+  if (!token) {
+    alert("Geçersiz link");
+    throw new Error("Token yok");
+  }
+
+  // 📦 ÜRÜN DATA (normalde API'den gelir)
+  const PRODUCTS = Array.from({ length: 1800 }).map((_, i) => ({
+    id: i + 1,
+    name: "Ürün " + (i + 1),
+    price: (Math.random() * 10 + 1).toFixed(2)
+  }));
+
+  const tbody = document.getElementById("products");
+  const search = document.getElementById("search");
+  const cart = {};
+
+  function render(list) {
+    tbody.innerHTML = "";
+    list.forEach(p => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${p.name}</td>
+        <td>₺${p.price}</td>
+        <td>
+          <input type="number" min="0"
+            onchange="updateQty(${p.id}, this.value)" />
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  window.updateQty = (id, qty) => {
+    if (qty > 0) cart[id] = Number(qty);
+    else delete cart[id];
+  };
+
+  search.oninput = () => {
+    const q = search.value.toLowerCase();
+    render(PRODUCTS.filter(p => p.name.toLowerCase().includes(q)));
+  };
+
+  document.getElementById("submit").onclick = async () => {
+    const items = Object.entries(cart).map(([id, qty]) => ({
+      productId: Number(id),
+      quantity: qty
+    }));
+
+    if (!items.length) {
+      alert("Ürün seçmediniz");
+      return;
+    }
+
+    await fetch("https://N8N_DOMAIN/webhook/offer-submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, items })
+    });
+
+    alert("Teklif gönderildi");
+  };
+
+  render(PRODUCTS);
+</script>
+
+</body>
+</html>
