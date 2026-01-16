@@ -2,103 +2,351 @@
 <html lang="tr">
 <head>
   <meta charset="UTF-8" />
-  <title>Fiyat Teklifi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Fiyat Teklifi - Ürün Seçimi</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 8px; }
-    th { background: #f4f4f4; }
-    input[type="number"] { width: 70px; }
-    #search { width: 100%; padding: 8px; }
-    #submit { margin-top: 20px; padding: 10px 20px; }
+    body { font-family: Arial, sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
+    h2 { margin: 0 0 10px; }
+    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    #search { flex: 1; min-width: 240px; padding: 10px; }
+    .pill { padding: 6px 10px; background: #f2f2f2; border-radius: 999px; font-size: 12px; }
+    .error { background: #ffe8e8; color: #7a0000; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; white-space: pre-wrap; }
+    .ok { background: #e8fff0; color: #0b5a2a; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; white-space: pre-wrap; }
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
+    th { background: #f6f6f6; position: sticky; top: 0; z-index: 1; }
+    td small { color: #666; }
+    input[type="number"] { width: 90px; padding: 6px; }
+    button { padding: 10px 16px; cursor: pointer; }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
+    .split { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+    .card { border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff; }
+    .cart-item { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #eee; }
+    .cart-item:last-child { border-bottom: 0; }
+    .muted { color: #666; font-size: 12px; }
+    .loading { opacity: 0.7; }
   </style>
 </head>
 <body>
+  <h2>Ürün Seçimi</h2>
+  <div class="row">
+    <input id="search" placeholder="Ürün veya Kod ara..." />
+    <span class="pill" id="countPill">Yükleniyor…</span>
+    <span class="pill" id="tokenPill"></span>
+  </div>
 
-<h2>Ürün Seçimi</h2>
+  <div id="err" class="error"></div>
+  <div id="ok" class="ok"></div>
 
-<input id="search" placeholder="Ürün ara..." />
+  <div class="split">
+    <div class="card">
+      <h3 style="margin:0 0 8px;">Ürün Listesi</h3>
+      <div class="muted">Adet girerek ürün ekleyebilirsin. Arama kutusu anlık filtreler.</div>
 
-<table>
-  <thead>
-    <tr>
-      <th>Ürün</th>
-      <th>Fiyat</th>
-      <th>Adet</th>
-    </tr>
-  </thead>
-  <tbody id="products"></tbody>
-</table>
+      <div style="max-height: 70vh; overflow:auto; margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 55%;">Kod / Ürün</th>
+              <th style="width: 20%;">Çap</th>
+              <th style="width: 25%;">Adet</th>
+            </tr>
+          </thead>
+          <tbody id="products"></tbody>
+        </table>
+      </div>
+    </div>
 
-<button id="submit">Teklif Oluştur</button>
+    <div class="card">
+      <h3 style="margin:0 0 8px;">Seçilenler</h3>
+      <div class="muted">Gönder dediğinde n8n teklif hesabını yapacak ve WhatsApp’tan dönüş yapacak.</div>
+
+      <div id="cartList" style="margin-top:10px;"></div>
+
+      <div style="margin-top:12px;" class="row">
+        <button id="submit">Teklif Oluştur</button>
+        <button id="clear" type="button">Temizle</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Not: Fiyat hesaplama sunucu tarafında yapılır (n8n). Bu sayfa sadece seçim gönderir.
+      </div>
+    </div>
+  </div>
 
 <script>
-  // 🔐 TOKEN
+  // =========================
+  // ✅ BURAYI KENDİ URL’LERİNLE DOLDUR
+  // =========================
+  const PRODUCTS_URL = "https://4idgxnjs.rpcl.app/webhook/product";      // GET ?token=
+  const SUBMIT_URL   = "https://4idgxnjs.rpcl.app/webhook/offer-submit";  // POST
+
+  // =========================
+  // TOKEN KONTROL
+  // =========================
   const token = new URLSearchParams(window.location.search).get("token");
+  const tokenPill = document.getElementById("tokenPill");
   if (!token) {
-    alert("Geçersiz link");
+    showErr("Geçersiz link: token bulunamadı.\nWhatsApp’tan gelen linkle açtığından emin ol.");
     throw new Error("Token yok");
   }
+  tokenPill.textContent = `token: ${token.slice(0, 8)}…`;
 
-  // 📦 ÜRÜN DATA (normalde API'den gelir)
-  const PRODUCTS = Array.from({ length: 1800 }).map((_, i) => ({
-    id: i + 1,
-    name: "Ürün " + (i + 1),
-    price: (Math.random() * 10 + 1).toFixed(2)
-  }));
-
+  // =========================
+  // UI ELEMENTS
+  // =========================
   const tbody = document.getElementById("products");
   const search = document.getElementById("search");
-  const cart = {};
+  const submitBtn = document.getElementById("submit");
+  const clearBtn = document.getElementById("clear");
+  const countPill = document.getElementById("countPill");
+  const cartList = document.getElementById("cartList");
 
-  function render(list) {
+  let PRODUCTS = [];
+  let FILTERED = [];
+  const cart = {}; // { kod: adet }
+
+  function showErr(msg) {
+    const el = document.getElementById("err");
+    el.style.display = "block";
+    el.textContent = msg;
+    document.getElementById("ok").style.display = "none";
+  }
+
+  function showOk(msg) {
+    const el = document.getElementById("ok");
+    el.style.display = "block";
+    el.textContent = msg;
+    document.getElementById("err").style.display = "none";
+  }
+
+  function setLoading(isLoading) {
+    document.body.classList.toggle("loading", isLoading);
+    submitBtn.disabled = isLoading;
+    clearBtn.disabled = isLoading;
+    search.disabled = isLoading;
+  }
+
+  // =========================
+  // ÜRÜNLERİ YÜKLE
+  // =========================
+  async function loadProducts() {
+    setLoading(true);
+    countPill.textContent = "Yükleniyor…";
+
+    const url = `${PRODUCTS_URL}?token=${encodeURIComponent(token)}`;
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+    } catch (e) {
+      setLoading(false);
+      showErr("Ürün listesine erişilemedi.\nMuhtemel sebep: CORS veya n8n URL hatası.\nDetay: " + e.message);
+      throw e;
+    }
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      setLoading(false);
+      showErr(`Ürün listesi alınamadı (HTTP ${res.status}).\n${txt}`);
+      throw new Error("Products API error");
+    }
+
+    const data = await res.json();
+
+    // Beklenen format: { products: [{ kod, cap, urun, ... }] }
+    PRODUCTS = Array.isArray(data.products) ? data.products : [];
+    FILTERED = PRODUCTS;
+
+    countPill.textContent = `${PRODUCTS.length} ürün`;
+    renderProducts(FILTERED);
+    renderCart();
+
+    setLoading(false);
+  }
+
+  // =========================
+  // RENDER: ÜRÜNLER
+  // =========================
+  function renderProducts(list) {
     tbody.innerHTML = "";
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="3"><small>Ürün bulunamadı.</small></td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
     list.forEach(p => {
+      const kod = String(p.kod ?? "");
+      const urun = String(p.urun ?? "");
+      const cap = p.cap == null ? "" : String(p.cap);
+
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${p.name}</td>
-        <td>₺${p.price}</td>
         <td>
-          <input type="number" min="0"
-            onchange="updateQty(${p.id}, this.value)" />
+          <strong>${escapeHtml(kod)}</strong><br/>
+          ${escapeHtml(urun)}
+        </td>
+        <td>${escapeHtml(cap)}</td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value="${cart[kod] ? cart[kod] : ""}"
+            placeholder="0"
+            data-kod="${escapeAttr(kod)}"
+          />
         </td>
       `;
+
+      const input = tr.querySelector("input");
+      input.addEventListener("input", (e) => {
+        const k = e.target.getAttribute("data-kod");
+        const q = Number(e.target.value);
+
+        if (Number.isFinite(q) && q > 0) cart[k] = Math.floor(q);
+        else delete cart[k];
+
+        renderCart();
+      });
+
       tbody.appendChild(tr);
     });
   }
 
-  window.updateQty = (id, qty) => {
-    if (qty > 0) cart[id] = Number(qty);
-    else delete cart[id];
-  };
-
-  search.oninput = () => {
-    const q = search.value.toLowerCase();
-    render(PRODUCTS.filter(p => p.name.toLowerCase().includes(q)));
-  };
-
-  document.getElementById("submit").onclick = async () => {
-    const items = Object.entries(cart).map(([id, qty]) => ({
-      productId: Number(id),
-      quantity: qty
-    }));
-
-    if (!items.length) {
-      alert("Ürün seçmediniz");
+  // =========================
+  // RENDER: SEPET
+  // =========================
+  function renderCart() {
+    const entries = Object.entries(cart);
+    if (!entries.length) {
+      cartList.innerHTML = `<div class="muted">Henüz ürün seçmedin.</div>`;
       return;
     }
 
-    await fetch("https://N8N_DOMAIN/webhook/offer-submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token, items })
+    // Ürün detaylarını bul
+    const byKod = new Map(PRODUCTS.map(p => [String(p.kod ?? ""), p]));
+    const itemsHtml = entries.map(([kod, adet]) => {
+      const p = byKod.get(kod) || {};
+      const urun = p.urun || "";
+      const cap = p.cap ? ` (${p.cap})` : "";
+
+      return `
+        <div class="cart-item">
+          <div>
+            <strong>${escapeHtml(kod)}</strong> - ${escapeHtml(urun)}${escapeHtml(cap)}
+          </div>
+          <div><strong>x${adet}</strong></div>
+        </div>
+      `;
+    }).join("");
+
+    cartList.innerHTML = itemsHtml;
+  }
+
+  // =========================
+  // ARAMA
+  // =========================
+  function applyFilter() {
+    const q = search.value.trim().toLowerCase();
+    if (!q) {
+      FILTERED = PRODUCTS;
+      countPill.textContent = `${PRODUCTS.length} ürün`;
+      renderProducts(FILTERED);
+      return;
+    }
+
+    FILTERED = PRODUCTS.filter(p => {
+      const kod = String(p.kod ?? "").toLowerCase();
+      const urun = String(p.urun ?? "").toLowerCase();
+      const cap  = String(p.cap ?? "").toLowerCase();
+      return kod.includes(q) || urun.includes(q) || cap.includes(q);
     });
 
-    alert("Teklif gönderildi");
-  };
+    countPill.textContent = `${FILTERED.length}/${PRODUCTS.length} ürün`;
+    renderProducts(FILTERED);
+  }
 
-  render(PRODUCTS);
+  search.addEventListener("input", applyFilter);
+
+  // =========================
+  // TEMİZLE
+  // =========================
+  clearBtn.addEventListener("click", () => {
+    for (const k of Object.keys(cart)) delete cart[k];
+    renderCart();
+    renderProducts(FILTERED);
+    showOk("Seçimler temizlendi.");
+  });
+
+  // =========================
+  // SUBMIT
+  // =========================
+  submitBtn.addEventListener("click", async () => {
+    const entries = Object.entries(cart);
+    if (!entries.length) return showErr("Ürün seçmedin. Lütfen en az 1 ürün için adet gir.");
+
+    const items = entries.map(([kod, adet]) => ({ kod, adet }));
+
+    setLoading(true);
+    showOk("Gönderiliyor…");
+
+    let res;
+    try {
+      res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, items })
+      });
+    } catch (e) {
+      setLoading(false);
+      showErr("Teklif gönderilemedi.\nMuhtemel sebep: CORS veya n8n URL hatası.\nDetay: " + e.message);
+      return;
+    }
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      setLoading(false);
+      showErr(`Teklif gönderilemedi (HTTP ${res.status}).\n${txt}`);
+      return;
+    }
+
+    // İstersen JSON okuruz:
+    // const data = await res.json().catch(()=>null);
+
+    setLoading(false);
+    showOk("Teklif talebiniz alındı ✅ WhatsApp üzerinden dönüş yapılacaktır.");
+  });
+
+  // =========================
+  // HELPERS
+  // =========================
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(s) {
+    // attribute için yeterli
+    return String(s).replaceAll('"', "&quot;");
+  }
+
+  // =========================
+  // START
+  // =========================
+  loadProducts().catch(() => {});
 </script>
-
 </body>
+</html>
+
 </html>
