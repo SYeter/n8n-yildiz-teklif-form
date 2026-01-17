@@ -189,10 +189,8 @@
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>
-          <strong>${escapeHtml(kod)}</strong><br/>
-          ${escapeHtml(urun)}
-        </td>
+        <td><strong>${escapeHtml(kod)}</strong></td>
+        <td>${escapeHtml(urun)}</td>
         <td>${escapeHtml(cap)}</td>
         <td>
           <input
@@ -205,7 +203,6 @@
           />
         </td>
       `;
-
       const input = tr.querySelector("input");
       input.addEventListener("input", (e) => {
         const k = e.target.getAttribute("data-kod");
