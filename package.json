@@ -7,7 +7,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@sparticuz/chromium-min": "^143.0.4",
+    "@sparticuz/chromium": "^143.0.4",
     "@vercel/blob": "^0.0.2",
     "next": "^14.2.35",
     "puppeteer-core": "^23.0.0",
