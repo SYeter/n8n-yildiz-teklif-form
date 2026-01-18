@@ -1,17 +1,13 @@
-export const config = {
-  runtime: "nodejs",
-  api: { bodyParser: { sizeLimit: "2mb" } }
-};
-
-import path from "path";
+import { put } from "@vercel/blob";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
-import { put } from "@vercel/blob";
 
+// Vercel Pages Router API route'unun Node.js runtime'da çalışmasını garanti eder
 export const config = {
+  runtime: "nodejs",
   api: {
-    bodyParser: { sizeLimit: "2mb" }
-  }
+    bodyParser: { sizeLimit: "3mb" },
+  },
 };
 
 export default async function handler(req, res) {
@@ -21,11 +17,17 @@ export default async function handler(req, res) {
     }
 
     const { html, css, filename = "teklif.pdf" } = req.body || {};
-    if (!html || typeof html !== "string") {
-      return res.status(400).json({ success: false, error: "html eksik" });
+
+    if (!html || typeof html !== "string" || !html.includes("<")) {
+      return res.status(400).json({ success: false, error: "html eksik/yanlış" });
     }
 
-    // ✅ Sparticuz chromium ayarları (Vercel için)
+    // CSS ayrı geldiyse <head> içine enjekte et
+    const finalHtml = css
+      ? html.replace("</head>", `<style>${css}</style></head>`)
+      : html;
+
+    // Sparticuz Chromium path (Vercel/serverless için)
     const executablePath = await chromium.executablePath();
 
     const browser = await puppeteer.launch({
@@ -38,10 +40,6 @@ export default async function handler(req, res) {
 
     const page = await browser.newPage();
 
-    const finalHtml = css
-      ? html.replace("</head>", `<style>${css}</style></head>`)
-      : html;
-
     await page.setContent(finalHtml, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
@@ -52,6 +50,7 @@ export default async function handler(req, res) {
 
     await browser.close();
 
+    // Vercel Blob'a public PDF olarak yükle
     const blob = await put(`offers/${Date.now()}-${filename}`, pdfBuffer, {
       access: "public",
       contentType: "application/pdf",
