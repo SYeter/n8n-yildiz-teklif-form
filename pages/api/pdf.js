@@ -2,8 +2,6 @@ import { put } from "@vercel/blob";
 import chromium from "@sparticuz/chromium";
 import puppeteer from "puppeteer-core";
 
-// 🔑 Var olan token'ı blob'un beklediği isimle eşle
-process.env.BLOB_STORE_WRITE_TOKEN = process.env.BLOB_READ_WRITE_TOKEN;
 
 
 // Vercel Pages Router API route'unun Node.js runtime'da çalışmasını garanti eder
