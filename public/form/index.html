@@ -86,7 +86,9 @@
   // =========================
   // TOKEN KONTROL
   // =========================
-  const token = new URLSearchParams(window.location.search).get("token");
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token");
+  const phone = params.get("phone");
   const tokenPill = document.getElementById("tokenPill");
   if (!token) {
     showErr("Geçersiz link: token bulunamadı.\nWhatsApp’tan gelen linkle açtığından emin ol.");
@@ -300,7 +302,12 @@
       res = await fetch(SUBMIT_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, items })
+        body: JSON.stringify({
+        token,
+        phone,
+        customerName: customerNameInput?.value || "",
+        items
+      })
       });
     } catch (e) {
       setLoading(false);
