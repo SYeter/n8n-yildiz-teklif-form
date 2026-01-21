@@ -5,31 +5,204 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Fiyat Teklifi - Ürün Seçimi</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; max-width: 1100px; margin: 0 auto; }
-    h2 { margin: 0 0 10px; }
+    :root{
+      /* ✅ Logo uyumlu tema */
+      --navy:#0D2B57;
+      --orange:#F0871E;
+      --bg:#F6F8FB;
+      --card:#FFFFFF;
+      --border:#E6ECF4;
+      --text:#0F172A;
+      --muted:#5B6472;
+      --pill:#EFF3F8;
+      --okBg:#E8FFF0;
+      --okText:#0B5A2A;
+      --errBg:#FFE8E8;
+      --errText:#7A0000;
+      --focus: rgba(240,135,30,.25);
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* ✅ Üst başlık + logo */
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom: 10px;
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 260px;
+    }
+    .brand img{
+      height:44px;
+      width:auto;
+      object-fit:contain;
+    }
+    h2 { margin: 0; color: var(--navy); letter-spacing:.2px; }
+
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    #search { flex: 1; min-width: 240px; padding: 10px; }
-    .pill { padding: 6px 10px; background: #f2f2f2; border-radius: 999px; font-size: 12px; }
-    .error { background: #ffe8e8; color: #7a0000; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; white-space: pre-wrap; }
-    .ok { background: #e8fff0; color: #0b5a2a; padding: 10px; border-radius: 8px; margin: 10px 0; display: none; white-space: pre-wrap; }
-    table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border: 1px solid #ddd; padding: 8px; vertical-align: top; }
-    th { background: #f6f6f6; position: sticky; top: 0; z-index: 1; }
-    td small { color: #666; }
-    input[type="number"] { width: 90px; padding: 6px; }
-    button { padding: 10px 16px; cursor: pointer; }
+    #search {
+      flex: 1; min-width: 240px; padding: 10px;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      outline:none;
+      background:#fff;
+    }
+    #search:focus{ box-shadow: 0 0 0 4px var(--focus); border-color: var(--orange); }
+
+    .pill {
+      padding: 6px 10px;
+      background: var(--pill);
+      border:1px solid var(--border);
+      border-radius: 999px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .error {
+      background: var(--errBg);
+      color: var(--errText);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      white-space: pre-wrap;
+      border:1px solid rgba(122,0,0,.12);
+    }
+    .ok {
+      background: var(--okBg);
+      color: var(--okText);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      white-space: pre-wrap;
+      border:1px solid rgba(11,90,42,.12);
+    }
+
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background:#fff; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    th {
+      background: linear-gradient(0deg, rgba(240,135,30,.10), rgba(240,135,30,.10)), #fff;
+      position: sticky; top: 0; z-index: 1;
+      color: var(--navy);
+      text-align:left;
+    }
+    td small { color: var(--muted); }
+
+    input[type="number"] {
+      width: 90px; padding: 6px;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      outline:none;
+      background:#fff;
+    }
+    input[type="number"]:focus{ box-shadow: 0 0 0 4px var(--focus); border-color: var(--orange); }
+
+    /* ✅ Müşteri alanları */
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:8px;
+    }
+    .field label{
+      font-size:12px;
+      color: var(--muted);
+      font-weight:700;
+    }
+    .field input, .field textarea{
+      width:100%;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      outline:none;
+      background:#fff;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+    .field textarea{
+      min-height: 70px;
+      resize: vertical;
+    }
+    .field input:focus, .field textarea:focus{
+      box-shadow: 0 0 0 4px var(--focus);
+      border-color: var(--orange);
+    }
+
+    button {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: var(--navy);
+      font-weight: 800;
+    }
+    button:hover{ border-color: rgba(13,43,87,.25); }
+    #submit{
+      background: var(--navy);
+      color:#fff;
+      border-color: transparent;
+    }
+    #submit:hover{ filter: brightness(1.05); }
+    #clear{
+      background: #fff;
+      color: var(--navy);
+    }
     button:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .split { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
     @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
-    .card { border: 1px solid #eee; border-radius: 12px; padding: 12px; background: #fff; }
-    .cart-item { display: flex; justify-content: space-between; gap: 10px; padding: 6px 0; border-bottom: 1px dashed #eee; }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--card);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+    }
     .cart-item:last-child { border-bottom: 0; }
-    .muted { color: #666; font-size: 12px; }
+
+    .muted { color: var(--muted); font-size: 12px; }
     .loading { opacity: 0.7; }
+
+    /* küçük vurgu */
+    .accent{
+      color: var(--orange);
+      font-weight: 900;
+    }
   </style>
 </head>
 <body>
-  <h2>Ürün Seçimi</h2>
+
+  <div class="topbar">
+    <div class="brand">
+      <img src="logo.png" alt="Yıldız Polietilen Logo"/>
+      <h2>Ürün Seçimi</h2>
+    </div>
+  </div>
+
   <div class="row">
     <input id="search" placeholder="Ürün veya Kod ara..." />
     <span class="pill" id="countPill">Yükleniyor…</span>
@@ -41,7 +214,7 @@
 
   <div class="split">
     <div class="card">
-      <h3 style="margin:0 0 8px;">Ürün Listesi</h3>
+      <h3 style="margin:0 0 8px; color: var(--navy);">Ürün Listesi</h3>
       <div class="muted">Adet girerek ürün ekleyebilirsin. Arama kutusu anlık filtreler.</div>
 
       <div style="max-height: 70vh; overflow:auto; margin-top:10px;">
@@ -60,7 +233,28 @@
     </div>
 
     <div class="card">
-      <h3 style="margin:0 0 8px;">Seçilenler</h3>
+      <!-- ✅ Yeni bölüm: Müşteri bilgileri -->
+      <h3 style="margin:0 0 8px; color: var(--navy);">Müşteri Bilgileri</h3>
+      <div class="muted">Teklifte görünecek bilgileri buradan gir.</div>
+
+      <div class="field">
+        <label for="custName">Firma/Şahıs Adı:</label>
+        <input id="custName" type="text" placeholder="Örn. ABC İnşaat Ltd." />
+      </div>
+
+      <div class="field">
+        <label for="custAddress">Adres:</label>
+        <textarea id="custAddress" placeholder="Adres bilgisi..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="custPhone">Telefon:</label>
+        <input id="custPhone" type="tel" placeholder="05xx xxx xx xx" />
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">
+
+      <h3 style="margin:0 0 8px; color: var(--navy);">Seçilenler</h3>
       <div class="muted">Gönder dediğinde n8n teklif hesabını yapacak ve WhatsApp’tan dönüş yapacak.</div>
 
       <div id="cartList" style="margin-top:10px;"></div>
@@ -105,6 +299,14 @@
   const clearBtn = document.getElementById("clear");
   const countPill = document.getElementById("countPill");
   const cartList = document.getElementById("cartList");
+
+  // ✅ Yeni: müşteri alanları
+  const custNameEl = document.getElementById("custName");
+  const custAddressEl = document.getElementById("custAddress");
+  const custPhoneEl = document.getElementById("custPhone");
+
+  // URL’den phone geldiyse otomatik yaz
+  if (phone) custPhoneEl.value = phone;
 
   let PRODUCTS = [];
   let FILTERED = [];
@@ -294,6 +496,13 @@
 
     const items = entries.map(([kod, adet]) => ({ kod, adet }));
 
+    // ✅ Yeni: müşteri verileri
+    const customer = {
+      name: (custNameEl.value || "").trim(),
+      address: (custAddressEl.value || "").trim(),
+      phone: (custPhoneEl.value || "").trim(),
+    };
+
     setLoading(true);
     showOk("Gönderiliyor…");
 
@@ -303,10 +512,11 @@
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-        token,
-        phone,
-        items
-      })
+          token,
+          phone,
+          items,
+          customer
+        })
       });
     } catch (e) {
       setLoading(false);
@@ -320,9 +530,6 @@
       showErr(`Teklif gönderilemedi (HTTP ${res.status}).\n${txt}`);
       return;
     }
-
-    // İstersen JSON okuruz:
-    // const data = await res.json().catch(()=>null);
 
     setLoading(false);
     showOk("Teklif talebiniz alındı ✅ WhatsApp üzerinden dönüş yapılacaktır.");
@@ -352,7 +559,3 @@
 </script>
 </body>
 </html>
-
-</html>
-
-
