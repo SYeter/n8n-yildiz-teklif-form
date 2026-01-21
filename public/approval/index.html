@@ -3,338 +3,290 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sipariş Onayı</title>
+  <title>Teklif Onay</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f6f7fb; margin:0; padding:18px; }
-    .wrap { max-width: 1200px; margin:0 auto; }
-    .card { background:#fff; border-radius:14px; padding:16px; box-shadow: 0 6px 24px rgba(0,0,0,.06); }
-    h1 { margin:0 0 10px; font-size:20px; }
-    .muted { color:#666; font-size:12px; }
-    .row { display:flex; gap:12px; flex-wrap:wrap; margin-top:10px; }
-    .pill { background:#eef2ff; color:#1e3a8a; border-radius:999px; padding:6px 10px; font-size:12px; }
-    .err { background:#fee2e2; color:#991b1b; padding:10px; border-radius:10px; margin-top:12px; display:none; }
-    .ok  { background:#dcfce7; color:#166534; padding:10px; border-radius:10px; margin-top:12px; display:none; }
-    table { width:100%; border-collapse:collapse; margin-top:14px; background:#fff; }
-    th, td { border-bottom:1px solid #eee; padding:10px; font-size:13px; vertical-align:middle; }
-    th { text-align:left; background:#fafafa; position:sticky; top:0; z-index:1; }
-    td.num, th.num { text-align:right; }
-    input[type="number"]{ width:95px; padding:6px 8px; border:1px solid #ddd; border-radius:10px; text-align:right; }
-    .chip { display:inline-flex; align-items:center; gap:6px; font-size:11px; padding:4px 8px; border-radius:999px; border:1px solid #e5e7eb; background:#fff; color:#111827; }
-    .chip.manual { border-color:#f59e0b; color:#92400e; background:#fffbeb; }
-    .chip.auto { border-color:#60a5fa; color:#1e3a8a; background:#eff6ff; }
-    .btns { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
-    button { border:0; border-radius:12px; padding:10px 14px; font-weight:700; cursor:pointer; }
-    .btn { background:#111827; color:#fff; }
-    .btn2 { background:#2563eb; color:#fff; }
-    .btn3 { background:#6b7280; color:#fff; }
-    .btnSmall { padding:7px 10px; border-radius:10px; font-size:12px; }
-    .btnWarn { background:#f59e0b; color:#111827; }
-    .btnGhost { background:#f3f4f6; color:#111827; border:1px solid #e5e7eb; }
-    .btn:disabled, .btn2:disabled { opacity:.6; cursor:not-allowed; }
-    .total { display:flex; justify-content:flex-end; gap:18px; margin-top:12px; font-size:14px; }
-    .total b { font-size:16px; }
-    .small { font-size:12px; }
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    .wrap{max-width:1100px;margin:0 auto}
+    .row{display:flex;gap:16px;align-items:flex-start}
+    .card{border:1px solid #ddd;border-radius:10px;padding:14px;background:#fff;flex:1}
+    h1{margin:0 0 10px 0}
+    .muted{color:#666;font-size:12px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border-bottom:1px solid #eee;padding:8px 6px;vertical-align:top}
+    th{text-align:left;background:#f6f6f6}
+    td.r, th.r{text-align:right}
+    td.c, th.c{text-align:center}
+    input[type="number"]{width:90px;padding:6px}
+    .btn{padding:10px 14px;border-radius:8px;border:1px solid #222;background:#222;color:#fff;cursor:pointer}
+    .btn.secondary{background:#fff;color:#222}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .topBar{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:999px;font-size:12px;color:#444}
+    .totals{margin-top:12px;max-width:380px;margin-left:auto}
+    .trow{display:grid;grid-template-columns:1fr 14px 140px;column-gap:8px;margin:6px 0;font-weight:800}
+    .trow .colon{text-align:center}
+    .trow .val{text-align:right;font-weight:700}
+    .error{color:#b00020;font-weight:700;margin-top:10px}
+    .ok{color:#0a7b2e;font-weight:700;margin-top:10px}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="card">
-    <h1>Sipariş Onayı</h1>
-    <div class="muted" id="meta">Yükleniyor…</div>
-
-    <div class="row" id="pills" style="display:none;">
-      <div class="pill" id="pillOffer"></div>
-      <div class="pill" id="pillCustomer"></div>
-      <div class="pill" id="pillPhone"></div>
-      <div class="pill" id="pillDate"></div>
+  <div class="topBar">
+    <div>
+      <h1>Teklif Onay</h1>
+      <div class="muted" id="meta"></div>
     </div>
+    <div>
+      <span class="pill" id="statusPill">yükleniyor...</span>
+    </div>
+  </div>
 
-    <div class="err" id="errBox"></div>
-    <div class="ok" id="okBox"></div>
-
-    <div style="overflow:auto; max-height: 62vh;">
-      <table id="tbl" style="display:none;">
+  <div class="row" style="margin-top:14px;">
+    <div class="card">
+      <div class="muted">Teklif Satırları (iskonto değişince net otomatik, neti istersen elle de değiştir)</div>
+      <table id="tbl">
         <thead>
           <tr>
-            <th style="min-width:140px;">Kod</th>
-            <th style="min-width:260px;">Ürün</th>
-            <th style="min-width:60px;">Çap</th>
-            <th class="num" style="min-width:70px;">Adet</th>
-            <th class="num" style="min-width:120px;">Liste</th>
-            <th class="num" style="min-width:120px;">İskonto (%)</th>
-            <th class="num" style="min-width:140px;">Net Fiyat</th>
-            <th class="num" style="min-width:140px;">Satır Tutarı</th>
-            <th style="min-width:170px;">Mod</th>
+            <th style="width:14%">Kod</th>
+            <th>Ürün</th>
+            <th class="c" style="width:8%">Çap</th>
+            <th class="c" style="width:8%">Adet</th>
+            <th class="r" style="width:12%">Liste Fiyatı</th> <!-- ✅ -->
+            <th class="c" style="width:10%">İskonto %</th>
+            <th class="r" style="width:12%">Net</th>
+            <th class="r" style="width:12%">Tutar</th>
           </tr>
         </thead>
-        <tbody id="tbody"></tbody>
+        <tbody></tbody>
       </table>
-    </div>
 
-    <div class="total" id="totals" style="display:none;">
-      <div class="small">Toplam: <b id="grandTotal">0,00</b></div>
-    </div>
+      <div class="totals" id="totals"></div>
 
-    <div class="btns" id="actions" style="display:none;">
-      <button class="btn3" id="btnReload">Yenile</button>
-      <button class="btn" id="btnSave">Kaydet (Taslak)</button>
-      <button class="btn2" id="btnApprove">Siparişi Onayla & PDF Gönder</button>
-    </div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn secondary" id="btnRecalc" type="button">Yeniden Hesapla</button>
+        <button class="btn" id="btnApprove" type="button">Siparişi Onayla</button>
+      </div>
 
-    <div class="muted" style="margin-top:10px;">
-      Not: İskonto değişince Net otomatik hesaplanır. Net alanına manuel yazarsanız “Manuel” moda geçer ve otomatik hesap net’i ezmez.
+      <div class="error" id="err" style="display:none;"></div>
+      <div class="ok" id="ok" style="display:none;"></div>
     </div>
   </div>
 </div>
 
 <script>
-  // ✅ N8N URL’lerini burada ayarla
+  // ✅ Burayı kendi n8n URL’lerinle değiştir
   const ORDER_GET_URL  = "https://4idgxnjs.rpcl.app/webhook-test/offer-get";
   const ORDER_POST_URL = "https://4idgxnjs.rpcl.app/webhook-test/offer-approve";
 
-  const q = new URLSearchParams(location.search);
-  const offerId  = (q.get("offerId") || q.get("token") || "").trim(); // token ile de açılabilsin
-  const adminKey = (q.get("adminKey") || "").trim();
+  const qs = new URLSearchParams(location.search);
+  const offerId = qs.get("offerId") || "";
+  const adminKey = qs.get("adminKey") || "";
 
-  const elErr = document.getElementById("errBox");
-  const elOk  = document.getElementById("okBox");
-  const meta  = document.getElementById("meta");
-  const pills = document.getElementById("pills");
-  const tbl   = document.getElementById("tbl");
-  const tbody = document.getElementById("tbody");
-  const totals= document.getElementById("totals");
-  const actions=document.getElementById("actions");
-  const btnReload=document.getElementById("btnReload");
-  const btnSave=document.getElementById("btnSave");
-  const btnApprove=document.getElementById("btnApprove");
+  const metaEl = document.getElementById("meta");
+  const statusPill = document.getElementById("statusPill");
+  const tbody = document.querySelector("#tbl tbody");
+  const totalsEl = document.getElementById("totals");
+  const errEl = document.getElementById("err");
+  const okEl = document.getElementById("ok");
+  const btnApprove = document.getElementById("btnApprove");
+  const btnRecalc = document.getElementById("btnRecalc");
 
-  let offer = null; // {offerId, customerName, phone, createdAt, currency, lines:[...]}
-  let lines = [];   // working copy
-
-  function showErr(msg){ elOk.style.display="none"; elErr.textContent=msg; elErr.style.display="block"; }
-  function showOk(msg){ elErr.style.display="none"; elOk.textContent=msg; elOk.style.display="block"; }
-
-  function trMoney(n){
-    const x = Number(n || 0);
-    return x.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  function showErr(msg){ errEl.style.display="block"; errEl.textContent=msg; okEl.style.display="none"; }
+  function showOk(msg){ okEl.style.display="block"; okEl.textContent=msg; errEl.style.display="none"; }
+  function money(n, cur){
+    const v = Number(n||0);
+    return v.toFixed(2).replace(".", ",") + " " + (cur||"€");
   }
 
-  function calcNetFromDiscount(listPrice, discountPct){
-    const lp = Number(listPrice || 0);
-    const d  = Number(discountPct || 0);
-    const net = lp * (1 - (d/100));
-    return Math.max(0, net);
+  // Rule: iskonto değişince net otomatik; net elle değişince manualNet=true
+  function calcNet(liste, iskonto){
+    const L = Number(liste||0);
+    const d = Number(iskonto||0);
+    return L * (1 - d/100);
   }
 
-  function recalcAll(){
-    let sum = 0;
-    for (const l of lines){
-      // otomatik modda net’i iskonto belirler
-      if (!l.manualNet){
-        l.net = calcNetFromDiscount(l.list, l.discount);
-      }
-      l.lineTotal = Number(l.net || 0) * Number(l.qty || 0);
-      sum += l.lineTotal;
-    }
-    document.getElementById("grandTotal").textContent = trMoney(sum) + " " + (offer?.currency || "₺");
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
-  }
-
-  function render(){
-    tbody.innerHTML = "";
-
-    for (let i=0;i<lines.length;i++){
-      const l = lines[i];
-
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${escapeHtml(l.kod)}</td>
-        <td>${escapeHtml(l.name)}</td>
-        <td>${escapeHtml(l.cap)}</td>
-        <td class="num">${escapeHtml(String(l.qty))}</td>
-        <td class="num">${trMoney(l.list)} ${offer.currency || "₺"}</td>
-
-        <td class="num">
-          <input type="number" min="0" max="100" step="0.1"
-                 value="${Number(l.discount||0)}" data-kind="discount" data-idx="${i}">
-        </td>
-
-        <td class="num">
-          <input type="number" min="0" step="0.01"
-                 value="${Number(l.net||0)}" data-kind="net" data-idx="${i}">
-        </td>
-
-        <td class="num">${trMoney(l.lineTotal)} ${offer.currency || "₺"}</td>
-
-        <td>
-          <span class="chip ${l.manualNet ? "manual" : "auto"}">
-            ${l.manualNet ? "Manuel Net" : "Otomatik Net"}
-          </span>
-          <button class="btnSmall btnGhost" data-kind="autoBtn" data-idx="${i}" style="margin-left:8px;">
-            Otomatik
-          </button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    // events
-    tbody.querySelectorAll("input[type='number']").forEach(inp => {
-      inp.addEventListener("input", (e) => {
-        const idx = Number(e.target.getAttribute("data-idx"));
-        const kind = e.target.getAttribute("data-kind");
-        const val = Number(e.target.value || 0);
-
-        if (kind === "discount"){
-          lines[idx].discount = Math.min(100, Math.max(0, val));
-          // iskonto değişince: eğer manuel modda değilse net otomatik güncellenir
-          if (!lines[idx].manualNet){
-            lines[idx].net = calcNetFromDiscount(lines[idx].list, lines[idx].discount);
-          }
-        } else if (kind === "net"){
-          // net’e manuel müdahale => manuel moda geç
-          lines[idx].net = Math.max(0, val);
-          lines[idx].manualNet = true;
-        }
-
-        recalcAll();
-        render(); // basitlik için tekrar çiziyoruz
-      });
-    });
-
-    tbody.querySelectorAll("button[data-kind='autoBtn']").forEach(btn => {
-      btn.addEventListener("click", (e) => {
-        const idx = Number(e.target.getAttribute("data-idx"));
-        lines[idx].manualNet = false;
-        lines[idx].net = calcNetFromDiscount(lines[idx].list, lines[idx].discount);
-        recalcAll();
-        render();
-      });
-    });
-
-    recalcAll();
-  }
+  let offer = null;
 
   async function loadOffer(){
-    elErr.style.display="none"; elOk.style.display="none";
-
-    if (!offerId || !adminKey){
-      showErr("Geçersiz link: offerId/token veya adminKey bulunamadı.");
+    if(!offerId || !adminKey){
+      showErr("Geçersiz link (offerId/adminKey eksik).");
       return;
     }
 
-    meta.textContent = "Teklif yükleniyor…";
-    try{
-      const url = `${ORDER_GET_URL}?offerId=${encodeURIComponent(offerId)}&adminKey=${encodeURIComponent(adminKey)}`;
-      const r = await fetch(url, { method:"GET" });
-      if (!r.ok){
-        const t = await r.text().catch(()=> "");
-        throw new Error(`HTTP ${r.status} - ${t}`);
-      }
-      const data = await r.json();
+    statusPill.textContent = "yükleniyor...";
+    metaEl.textContent = "";
 
-      // beklenen:
-      // { success:true, offer:{ offerId, customerName, phone, createdAt, currency, lines:[{kod, urun, cap, adet, liste, iskonto, net, manualNet}] } }
-      if (!data || data.success !== true || !data.offer){
-        throw new Error("Teklif verisi alınamadı.");
-      }
+    const url = `${OFFER_GET_URL}?offerId=${encodeURIComponent(offerId)}&adminKey=${encodeURIComponent(adminKey)}`;
+    const res = await fetch(url, { method:"GET" });
+    const data = await res.json();
 
-      offer = data.offer;
-
-      lines = (offer.lines || []).map(l => ({
-        kod: String(l.kod || "").trim(),
-        name: String(l.urun || l.name || ""),
-        cap: String(l.cap || ""),
-        qty: Number(l.adet || l.qty || 0),
-        list: Number(l.liste || l.list || 0),
-        discount: Number(l.iskonto || l.discount || 0),
-        manualNet: Boolean(l.manualNet),
-        net: Number(l.net || 0),
-        lineTotal: 0,
-      }));
-
-      // Eğer net gelmediyse otomatik hesapla
-      for (const l of lines){
-        if (!l.net || l.net <= 0){
-          l.manualNet = false;
-          l.net = calcNetFromDiscount(l.list, l.discount);
-        }
-      }
-
-      meta.textContent = "Hazır.";
-      pills.style.display="flex";
-      document.getElementById("pillOffer").textContent = `Teklif: ${offer.offerId || offerId}`;
-      document.getElementById("pillCustomer").textContent = `Müşteri: ${offer.customerName || "-"}`;
-      document.getElementById("pillPhone").textContent = `Telefon: ${offer.phone || "-"}`;
-      document.getElementById("pillDate").textContent = `Tarih: ${offer.createdAt || "-"}`;
-
-      tbl.style.display="table";
-      totals.style.display="flex";
-      actions.style.display="flex";
-
-      recalcAll();
-      render();
-
-    }catch(e){
-      showErr("Teklif yüklenemedi. Detay: " + (e?.message || String(e)));
-      meta.textContent = "Hata.";
+    if(!data || !data.success || !data.offer){
+      throw new Error("Teklif verisi alınamadı.");
     }
+
+    offer = data.offer;
+
+    const cur = offer.currency || "€";                 // ✅ para birimi buradan
+    statusPill.textContent = offer.status || "draft";
+    metaEl.textContent = `Teklif No: ${offer.offerId} • Para birimi: ${cur} • Müşteri: ${offer.customerName || "-"} • Telefon: ${(offer.phone||"").replace(/^whatsapp:/i,"") || "-"}`;
+
+    renderTable();
+    recalcTotals();
   }
 
-  async function postUpdate(action){
-    btnSave.disabled = true;
-    btnApprove.disabled = true;
-    btnReload.disabled = true;
+  function renderTable(){
+    const cur = offer.currency || "€";
+    tbody.innerHTML = "";
 
+    (offer.lines || []).forEach((l, idx) => {
+      const tr = document.createElement("tr");
+
+      const liste = Number(l.liste||0);
+      const iskonto = Number(l.iskonto||0);
+      const net = Number(l.net||0);
+      const adet = Number(l.adet||0);
+
+      tr.innerHTML = `
+        <td><strong>${l.kod||""}</strong></td>
+        <td>${l.urun||""}</td>
+        <td class="c">${l.cap||""}</td>
+        <td class="c">${adet}</td>
+
+        <td class="r">${money(liste, cur)}</td>
+
+        <td class="c">
+          <input type="number" min="0" max="100" step="1" value="${iskonto}" data-idx="${idx}" data-field="iskonto">
+        </td>
+
+        <td class="r">
+          <input type="number" step="0.01" value="${net}" data-idx="${idx}" data-field="net">
+        </td>
+
+        <td class="r" data-idx="${idx}" data-field="tutar">${money((net*adet), cur)}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    // Event binding
+    tbody.querySelectorAll('input[data-field="iskonto"]').forEach(inp=>{
+      inp.addEventListener("input", e=>{
+        const i = Number(e.target.dataset.idx);
+        const val = Number(e.target.value||0);
+        offer.lines[i].iskonto = val;
+
+        // ✅ iskonto değişince net otomatik (manualNet=false)
+        offer.lines[i].net = calcNet(offer.lines[i].liste, val);
+        offer.lines[i].manualNet = false;
+
+        // net input’u da güncelle
+        const netInp = tbody.querySelector(`input[data-idx="${i}"][data-field="net"]`);
+        if(netInp) netInp.value = Number(offer.lines[i].net||0).toFixed(2);
+
+        updateLineTotal(i);
+        recalcTotals();
+      });
+    });
+
+    tbody.querySelectorAll('input[data-field="net"]').forEach(inp=>{
+      inp.addEventListener("input", e=>{
+        const i = Number(e.target.dataset.idx);
+        const val = Number(e.target.value||0);
+        offer.lines[i].net = val;
+
+        // ✅ net elle değişti: manualNet=true
+        offer.lines[i].manualNet = true;
+
+        updateLineTotal(i);
+        recalcTotals();
+      });
+    });
+  }
+
+  function updateLineTotal(i){
+    const cur = offer.currency || "€";
+    const l = offer.lines[i];
+    const tutar = Number(l.net||0) * Number(l.adet||0);
+    l.tutar = tutar;
+
+    const cell = tbody.querySelector(`td[data-idx="${i}"][data-field="tutar"]`);
+    if(cell) cell.textContent = money(tutar, cur);
+  }
+
+  function recalcTotals(){
+    const cur = offer.currency || "€";
+    const sub = (offer.lines||[]).reduce((s,l)=> s + (Number(l.tutar||0)), 0);
+    const kdv = sub * 0.20;
+    const grand = sub + kdv;
+
+    totalsEl.innerHTML = `
+      <div class="trow"><div>Ara Toplam</div><div class="colon">:</div><div class="val">${money(sub, cur)}</div></div>
+      <div class="trow"><div>KDV %20</div><div class="colon">:</div><div class="val">${money(kdv, cur)}</div></div>
+      <div class="trow"><div>Genel Toplam</div><div class="colon">:</div><div class="val">${money(grand, cur)}</div></div>
+    `;
+
+    offer.total = sub;
+  }
+
+  btnRecalc.addEventListener("click", ()=>{
+    renderTable();
+    recalcTotals();
+    showOk("Hesap güncellendi.");
+  });
+
+  btnApprove.addEventListener("click", async ()=>{
     try{
-      // n8n’ye gidecek payload
+      btnApprove.disabled = true;
+      showOk("Onay gönderiliyor...");
+
       const payload = {
         offerId,
         adminKey,
-        action, // "save" | "approve"
-        lines: lines.map(l => ({
+        action: "approve",
+        updatedLines: (offer.lines||[]).map(l => ({
           kod: l.kod,
-          iskonto: Number(l.discount || 0),
-          net: Number(l.net || 0),
-          manualNet: Boolean(l.manualNet),
-        }))
+          urun: l.urun,
+          cap: l.cap,
+          adet: Number(l.adet||0),
+          liste: Number(l.liste||0),
+          iskonto: Number(l.iskonto||0),
+          net: Number(l.net||0),
+          manualNet: !!l.manualNet,
+          tutar: Number(l.tutar||0),
+        })),
+        total: Number(offer.total||0),
+        currency: offer.currency || "€",           // ✅ para birimi doğru gönder
+        phone: offer.phone || "",
+        customerName: offer.customerName || ""
       };
 
-      const r = await fetch(ORDER_POST_URL, {
+      const res = await fetch(APPROVE_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
 
-      const data = await r.json().catch(()=>null);
-      if (!r.ok || !data) throw new Error(`HTTP ${r.status}`);
-      if (data.success !== true) throw new Error(data.error || "İşlem başarısız");
-
-      if (action === "save"){
-        showOk("Kaydedildi ✅");
-      } else {
-        showOk("Onaylandı ✅ PDF müşteriye gönderildi.");
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok || !data || data.success === false){
+        throw new Error(data.error || data.message || "Approve hatası");
       }
 
+      showOk("Onaylandı. PDF hazırlanıp müşteriye gönderilecektir.");
     }catch(e){
-      showErr("İşlem hatası: " + (e?.message || String(e)));
+      showErr(String(e.message || e));
     }finally{
-      btnSave.disabled = false;
       btnApprove.disabled = false;
-      btnReload.disabled = false;
     }
-  }
+  });
 
-  btnReload.addEventListener("click", loadOffer);
-  btnSave.addEventListener("click", () => postUpdate("save"));
-  btnApprove.addEventListener("click", () => postUpdate("approve"));
-
-  loadOffer();
+  (async ()=>{
+    try{
+      await loadOffer();
+    }catch(e){
+      showErr("Teklif yüklenemedi: " + (e.message || e));
+    }
+  })();
 </script>
 </body>
 </html>
