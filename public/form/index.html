@@ -6,9 +6,11 @@
   <title>Fiyat Teklifi - Ürün Seçimi</title>
   <style>
     :root{
-      /* ✅ Logo birebir renkleri */
+      /* ✅ Logo uyumlu tema */
       --navy:#0D2B57;
-      --orange:#F28C28;          /* 🔴 LOGO PİKSEL TURUNCUSU */
+      /* ✅ LOGO "Polietilen" turuncusu (piksel): */
+      --orange:#FF7F00;
+
       --bg:#F6F8FB;
       --card:#FFFFFF;
       --border:#E6ECF4;
@@ -19,7 +21,7 @@
       --okText:#0B5A2A;
       --errBg:#FFE8E8;
       --errText:#7A0000;
-      --focus: rgba(242,140,40,.25); /* 🔴 turuncuya göre güncellendi */
+      --focus: rgba(240,135,30,.25);
     }
 
     body {
@@ -31,12 +33,13 @@
       color: var(--text);
     }
 
+    /* ✅ Üst başlık + logo */
     .topbar{
       position: relative;
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 10px; /* istersen */
     }
 
     .brandLogo{
@@ -52,13 +55,22 @@
       margin: 0;
       width: max-content;
       text-align: center;
-      color: var(--navy);
     }
 
-    h2 { margin: 0; letter-spacing:.2px; }
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      min-width: 260px;
+    }
+    .brand img{
+      height:44px;
+      width:auto;
+      object-fit:contain;
+    }
+    h2 { margin: 0; color: var(--navy); letter-spacing:.2px; }
 
     .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-
     #search {
       flex: 1; min-width: 240px; padding: 10px;
       border:1px solid var(--border);
@@ -66,10 +78,7 @@
       outline:none;
       background:#fff;
     }
-    #search:focus{
-      box-shadow: 0 0 0 4px var(--focus);
-      border-color: var(--orange);
-    }
+    #search:focus{ box-shadow: 0 0 0 4px var(--focus); border-color: var(--orange); }
 
     .pill {
       padding: 6px 10px;
@@ -80,40 +89,37 @@
       color: var(--muted);
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 12px;
-      background:#fff;
+    .error {
+      background: var(--errBg);
+      color: var(--errText);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      white-space: pre-wrap;
+      border:1px solid rgba(122,0,0,.12);
+    }
+    .ok {
+      background: var(--okBg);
+      color: var(--okText);
+      padding: 10px;
+      border-radius: 8px;
+      margin: 10px 0;
+      display: none;
+      white-space: pre-wrap;
+      border:1px solid rgba(11,90,42,.12);
     }
 
-    th, td {
-      border: 1px solid var(--border);
-      padding: 8px;
-      vertical-align: top;
-    }
-
-    /* 🔴 TABLO BAŞLIĞI – LOGO TURUNCUSU */
-    thead th{
+    table { width: 100%; border-collapse: collapse; margin-top: 12px; background:#fff; }
+    th, td { border: 1px solid var(--border); padding: 8px; vertical-align: top; }
+    th {
+      /* ✅ DEĞİŞTİ: açık sarı efekt yerine tam turuncu */
       background: var(--orange);
-      color: #fff;
-      font-weight: 800;
-      text-align: left;
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
 
-    thead th:not(:last-child)::after{
-      content:"";
-      position:absolute;
-      right:0;
-      top:20%;
-      bottom:20%;
-      width:1px;
-      background: rgba(255,255,255,.9);
+      position: sticky; top: 0; z-index: 1;
+      color: var(--navy);
+      text-align:left;
     }
-
     td small { color: var(--muted); }
 
     input[type="number"] {
@@ -123,17 +129,37 @@
       outline:none;
       background:#fff;
     }
-    input[type="number"]:focus{
+    input[type="number"]:focus{ box-shadow: 0 0 0 4px var(--focus); border-color: var(--orange); }
+
+    /* ✅ Müşteri alanları */
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-top:8px;
+    }
+    .field label{
+      font-size:12px;
+      color: var(--muted);
+      font-weight:700;
+    }
+    .field input, .field textarea{
+      width:100%;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius: 10px;
+      outline:none;
+      background:#fff;
+      font-family: Arial, sans-serif;
+      font-size: 13px;
+    }
+    .field textarea{
+      min-height: 70px;
+      resize: vertical;
+    }
+    .field input:focus, .field textarea:focus{
       box-shadow: 0 0 0 4px var(--focus);
       border-color: var(--orange);
-    }
-
-    .card {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 12px;
-      background: var(--card);
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
     }
 
     button {
@@ -145,26 +171,409 @@
       color: var(--navy);
       font-weight: 800;
     }
-
+    button:hover{ border-color: rgba(13,43,87,.25); }
     #submit{
       background: var(--navy);
       color:#fff;
       border-color: transparent;
     }
+    #submit:hover{ filter: brightness(1.05); }
+    #clear{
+      background: #fff;
+      color: var(--navy);
+    }
+    button:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    .split { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+    @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
+
+    .card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: var(--card);
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .cart-item:last-child { border-bottom: 0; }
+
+    .muted { color: var(--muted); font-size: 12px; }
+    .loading { opacity: 0.7; }
+
+    /* küçük vurgu */
     .accent{
       color: var(--orange);
       font-weight: 900;
     }
   </style>
 </head>
-
 <body>
-  <div class="topbar">
-    <img class="brandLogo" src="./logo.png" alt="Yıldız Polietilen">
-    <h2 class="pageTitle">Ürün Seçimi</h2>
+    <div class="topbar">
+      <img class="brandLogo" src="./logo.png" alt="Logo">
+      <h2 class="pageTitle">Ürün Seçimi</h2>
+    </div>
   </div>
 
-  <!-- DEVAMI DEĞİŞMEDİ -->
+  <div class="row">
+    <input id="search" placeholder="Ürün veya Kod ara..." />
+    <span class="pill" id="countPill">Yükleniyor…</span>
+    <span class="pill" id="tokenPill"></span>
+  </div>
+
+  <div id="err" class="error"></div>
+  <div id="ok" class="ok"></div>
+
+  <div class="split">
+    <div class="card">
+      <h3 style="margin:0 0 8px; color: var(--navy);">Ürün Listesi</h3>
+      <div class="muted">Adet girerek ürün ekleyebilirsin. Arama kutusu anlık filtreler.</div>
+
+      <div style="max-height: 70vh; overflow:auto; margin-top:10px;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 18%;">Kod</th>
+              <th style="width: 37%;">Ürün</th>
+              <th style="width: 20%;">Çap</th>
+              <th style="width: 25%;">Adet</th>
+            </tr>
+          </thead>
+          <tbody id="products"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <!-- ✅ Yeni bölüm: Müşteri bilgileri -->
+      <h3 style="margin:0 0 8px; color: var(--navy);">Müşteri Bilgileri</h3>
+      <div class="muted">Teklifte görünecek bilgileri buradan gir.</div>
+
+      <div class="field">
+        <label for="custName">Firma/Şahıs Adı:</label>
+        <input id="custName" type="text" placeholder="Örn. ABC İnşaat Ltd." />
+      </div>
+
+      <div class="field">
+        <label for="custAddress">Adres:</label>
+        <textarea id="custAddress" placeholder="Adres bilgisi..."></textarea>
+      </div>
+
+      <div class="field">
+        <label for="custPhone">Telefon:</label>
+        <input id="custPhone" type="tel" placeholder="05xx xxx xx xx" />
+      </div>
+
+      <hr style="border:none; border-top:1px solid var(--border); margin:12px 0;">
+
+      <h3 style="margin:0 0 8px; color: var(--navy);">Seçilenler</h3>
+      <div class="muted">Gönder dediğinde n8n teklif hesabını yapacak ve WhatsApp’tan dönüş yapacak.</div>
+
+      <div id="cartList" style="margin-top:10px;"></div>
+
+      <div style="margin-top:12px;" class="row">
+        <button id="submit">Teklif Oluştur</button>
+        <button id="clear" type="button">Temizle</button>
+      </div>
+
+      <div class="muted" style="margin-top:10px;">
+        Not: Fiyat hesaplama sunucu tarafında yapılır (n8n). Bu sayfa sadece seçim gönderir.
+      </div>
+    </div>
+  </div>
+
+<script>
+  // =========================
+  // ✅ BURAYI KENDİ URL’LERİNLE DOLDUR
+  // =========================
+  const PRODUCTS_URL = "https://4idgxnjs.rpcl.app/webhook-test/products";      // GET ?token=
+  const SUBMIT_URL   = "https://4idgxnjs.rpcl.app/webhook-test/offer-submit";  // POST
+
+  // =========================
+  // TOKEN KONTROL
+  // =========================
+  const params = new URLSearchParams(location.search);
+  const token = params.get("token");
+  const phone = params.get("phone");
+  const tokenPill = document.getElementById("tokenPill");
+  if (!token) {
+    showErr("Geçersiz link: token bulunamadı.\nWhatsApp’tan gelen linkle açtığından emin ol.");
+    throw new Error("Token yok");
+  }
+  tokenPill.textContent = `token: ${token.slice(0, 8)}…`;
+
+  // =========================
+  // UI ELEMENTS
+  // =========================
+  const tbody = document.getElementById("products");
+  const search = document.getElementById("search");
+  const submitBtn = document.getElementById("submit");
+  const clearBtn = document.getElementById("clear");
+  const countPill = document.getElementById("countPill");
+  const cartList = document.getElementById("cartList");
+
+  // ✅ Yeni: müşteri alanları
+  const custNameEl = document.getElementById("custName");
+  const custAddressEl = document.getElementById("custAddress");
+  const custPhoneEl = document.getElementById("custPhone");
+
+  // URL’den phone geldiyse otomatik yaz
+  if (phone) custPhoneEl.value = phone;
+
+  let PRODUCTS = [];
+  let FILTERED = [];
+  const cart = {}; // { kod: adet }
+
+  function showErr(msg) {
+    const el = document.getElementById("err");
+    el.style.display = "block";
+    el.textContent = msg;
+    document.getElementById("ok").style.display = "none";
+  }
+
+  function showOk(msg) {
+    const el = document.getElementById("ok");
+    el.style.display = "block";
+    el.textContent = msg;
+    document.getElementById("err").style.display = "none";
+  }
+
+  function setLoading(isLoading) {
+    document.body.classList.toggle("loading", isLoading);
+    submitBtn.disabled = isLoading;
+    clearBtn.disabled = isLoading;
+    search.disabled = isLoading;
+  }
+
+  // =========================
+  // ÜRÜNLERİ YÜKLE
+  // =========================
+  async function loadProducts() {
+    setLoading(true);
+    countPill.textContent = "Yükleniyor…";
+
+    const url = `${PRODUCTS_URL}?token=${encodeURIComponent(token)}`;
+
+    let res;
+    try {
+      res = await fetch(url, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+    } catch (e) {
+      setLoading(false);
+      showErr("Ürün listesine erişilemedi.\nMuhtemel sebep: CORS veya n8n URL hatası.\nDetay: " + e.message);
+      throw e;
+    }
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      setLoading(false);
+      showErr(`Ürün listesi alınamadı (HTTP ${res.status}).\n${txt}`);
+      throw new Error("Products API error");
+    }
+
+    const data = await res.json();
+
+    // Beklenen format: { products: [{ kod, cap, urun, ... }] }
+    PRODUCTS = Array.isArray(data.products) ? data.products : [];
+    FILTERED = PRODUCTS;
+
+    countPill.textContent = `${PRODUCTS.length} ürün`;
+    renderProducts(FILTERED);
+    renderCart();
+
+    setLoading(false);
+  }
+
+  // =========================
+  // RENDER: ÜRÜNLER
+  // =========================
+  function renderProducts(list) {
+    tbody.innerHTML = "";
+    if (!list.length) {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `<td colspan="3"><small>Ürün bulunamadı.</small></td>`;
+      tbody.appendChild(tr);
+      return;
+    }
+
+    list.forEach(p => {
+      const kod = String(p.kod ?? "");
+      const urun = String(p.urun ?? "");
+      const cap = p.cap == null ? "" : String(p.cap);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${escapeHtml(kod)}</strong></td>
+        <td>${escapeHtml(urun)}</td>
+        <td>${escapeHtml(cap)}</td>
+        <td>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value="${cart[kod] ? cart[kod] : ""}"
+            placeholder="0"
+            data-kod="${escapeAttr(kod)}"
+          />
+        </td>
+      `;
+      const input = tr.querySelector("input");
+      input.addEventListener("input", (e) => {
+        const k = e.target.getAttribute("data-kod");
+        const q = Number(e.target.value);
+
+        if (Number.isFinite(q) && q > 0) cart[k] = Math.floor(q);
+        else delete cart[k];
+
+        renderCart();
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  // =========================
+  // RENDER: SEPET
+  // =========================
+  function renderCart() {
+    const entries = Object.entries(cart);
+    if (!entries.length) {
+      cartList.innerHTML = `<div class="muted">Henüz ürün seçmedin.</div>`;
+      return;
+    }
+
+    // Ürün detaylarını bul
+    const byKod = new Map(PRODUCTS.map(p => [String(p.kod ?? ""), p]));
+    const itemsHtml = entries.map(([kod, adet]) => {
+      const p = byKod.get(kod) || {};
+      const urun = p.urun || "";
+      const cap = p.cap ? ` (${p.cap})` : "";
+
+      return `
+        <div class="cart-item">
+          <div>
+            <strong>${escapeHtml(kod)}</strong> - ${escapeHtml(urun)}${escapeHtml(cap)}
+          </div>
+          <div><strong>x${adet}</strong></div>
+        </div>
+      `;
+    }).join("");
+
+    cartList.innerHTML = itemsHtml;
+  }
+
+  // =========================
+  // ARAMA
+  // =========================
+  function applyFilter() {
+    const q = search.value.trim().toLowerCase();
+    if (!q) {
+      FILTERED = PRODUCTS;
+      countPill.textContent = `${PRODUCTS.length} ürün`;
+      renderProducts(FILTERED);
+      return;
+    }
+
+    FILTERED = PRODUCTS.filter(p => {
+      const kod = String(p.kod ?? "").toLowerCase();
+      const urun = String(p.urun ?? "").toLowerCase();
+      const cap  = String(p.cap ?? "").toLowerCase();
+      return kod.includes(q) || urun.includes(q) || cap.includes(q);
+    });
+
+    countPill.textContent = `${FILTERED.length}/${PRODUCTS.length} ürün`;
+    renderProducts(FILTERED);
+  }
+
+  search.addEventListener("input", applyFilter);
+
+  // =========================
+  // TEMİZLE
+  // =========================
+  clearBtn.addEventListener("click", () => {
+    for (const k of Object.keys(cart)) delete cart[k];
+    renderCart();
+    renderProducts(FILTERED);
+    showOk("Seçimler temizlendi.");
+  });
+
+  // =========================
+  // SUBMIT
+  // =========================
+  submitBtn.addEventListener("click", async () => {
+    const entries = Object.entries(cart);
+    if (!entries.length) return showErr("Ürün seçmedin. Lütfen en az 1 ürün için adet gir.");
+
+    const items = entries.map(([kod, adet]) => ({ kod, adet }));
+
+    // ✅ Yeni: müşteri verileri
+    const customer = {
+      name: (custNameEl.value || "").trim(),
+      address: (custAddressEl.value || "").trim(),
+      phone: (custPhoneEl.value || "").trim(),
+    };
+
+    setLoading(true);
+    showOk("Gönderiliyor…");
+
+    let res;
+    try {
+      res = await fetch(SUBMIT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          token,
+          phone,
+          items,
+          customer
+        })
+      });
+    } catch (e) {
+      setLoading(false);
+      showErr("Teklif gönderilemedi.\nMuhtemel sebep: CORS veya n8n URL hatası.\nDetay: " + e.message);
+      return;
+    }
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      setLoading(false);
+      showErr(`Teklif gönderilemedi (HTTP ${res.status}).\n${txt}`);
+      return;
+    }
+
+    setLoading(false);
+    showOk("Teklif talebiniz alındı ✅ WhatsApp üzerinden dönüş yapılacaktır.");
+  });
+
+  // =========================
+  // HELPERS
+  // =========================
+  function escapeHtml(s) {
+    return String(s)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function escapeAttr(s) {
+    // attribute için yeterli
+    return String(s).replaceAll('"', "&quot;");
+  }
+
+  // =========================
+  // START
+  // =========================
+  loadProducts().catch(() => {});
+</script>
 </body>
 </html>
