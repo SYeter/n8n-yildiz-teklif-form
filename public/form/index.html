@@ -325,7 +325,7 @@
   const custPhoneEl = document.getElementById("custPhone");
 
   // URL’den phone geldiyse otomatik yaz
-  if (phone) custPhoneEl.value = phone;
+  if (phone) custPhoneEl.value = String(phone).replace(/^whatsapp:/i, "").trim();
 
   let PRODUCTS = [];
   let FILTERED = [];
