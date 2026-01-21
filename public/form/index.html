@@ -33,12 +33,28 @@
 
     /* ✅ Üst başlık + logo */
     .topbar{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:16px;
-      margin-bottom: 10px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px; /* istersen */
     }
+
+    .brandLogo{
+      height: 44px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .pageTitle{
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 0;
+      width: max-content;
+      text-align: center;
+    }
+
     .brand{
       display:flex;
       align-items:center;
@@ -195,11 +211,9 @@
   </style>
 </head>
 <body>
-
-  <div class="topbar">
-    <div class="brand">
-      <img src="logo.png" alt="Yıldız Polietilen Logo"/>
-      <h2>Ürün Seçimi</h2>
+    <div class="topbar">
+      <img class="brandLogo" src="./logo.png" alt="Logo">
+      <h2 class="pageTitle">Ürün Seçimi</h2>
     </div>
   </div>
 
