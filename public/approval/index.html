@@ -5,131 +5,142 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Teklif Onay</title>
   <style>
-    body { font-family: Arial, sans-serif; margin: 24px; color:#111; }
-    .wrap { max-width: 1200px; margin: 0 auto; }
-    h2 { margin: 0 0 14px; }
-    .muted { color:#666; font-size: 14px; margin-bottom: 16px; }
-    table { width: 100%; border-collapse: collapse; }
-    thead th { text-align:left; background:#f6f6f6; padding: 12px 10px; font-size: 22px; }
-    tbody td { padding: 14px 10px; border-bottom: 1px solid #eee; font-size: 22px; vertical-align: middle; }
-    .code { font-weight: 900; }
-    .center { text-align:center; }
-    .right { text-align:right; }
-    input[type="number"], input[type="text"]{
-      font-size: 20px;
-      padding: 10px 12px;
-      width: 130px;
-      border: 1px solid #777;
-      border-radius: 3px;
-    }
-    input.small { width: 110px; }
-    .totalsRow { display:flex; justify-content:flex-end; margin-top: 20px; }
-    .totals { width: 520px; }
-    .tline{ display:grid; grid-template-columns: 1fr 18px 160px; column-gap: 14px; align-items: baseline; margin: 14px 0; }
-    .tlabel{ font-weight: 900; font-size: 28px; text-align:left; }
-    .tcolon{ font-weight: 900; font-size: 28px; text-align:center; }
-    .tval{ font-weight: 900; font-size: 28px; text-align:right; }
-    .actions { display:flex; gap: 18px; justify-content:flex-end; margin-top: 16px; }
-    .btn{
-      font-size: 20px;
-      padding: 14px 26px;
-      border-radius: 14px;
-      border: 1px solid #222;
-      cursor: pointer;
-      background:#fff;
-    }
-    .btn.primary{
-      background:#111;
-      color:#fff;
-      border-color:#111;
-    }
-    .error { margin-top: 14px; color: #b00020; font-weight: 700; }
-    .topinfo { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 12px; gap: 12px; }
-    .badge { font-size: 14px; background:#f6f6f6; padding: 6px 10px; border-radius: 10px; }
+    body{font-family:Arial,Helvetica,sans-serif;margin:20px;color:#111}
+    .wrap{max-width:1100px;margin:0 auto}
+    .row{display:flex;gap:16px;align-items:flex-start}
+    .card{border:1px solid #ddd;border-radius:10px;padding:14px;background:#fff;flex:1}
+    h1{margin:0 0 10px 0}
+    .muted{color:#666;font-size:12px}
+    table{width:100%;border-collapse:collapse;margin-top:10px}
+    th,td{border-bottom:1px solid #eee;padding:8px 6px;vertical-align:top}
+    th{text-align:left;background:#f6f6f6}
+    td.r, th.r{text-align:right}
+    td.c, th.c{text-align:center}
+    input[type="number"]{width:90px;padding:6px}
+    .btn{padding:10px 14px;border-radius:8px;border:1px solid #222;background:#222;color:#fff;cursor:pointer}
+    .btn.secondary{background:#fff;color:#222}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .topBar{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+    .pill{display:inline-block;padding:4px 8px;border:1px solid #ddd;border-radius:999px;font-size:12px;color:#444}
+    .totals{margin-top:12px;max-width:380px;margin-left:auto}
+    .trow{display:grid;grid-template-columns:1fr 14px 140px;column-gap:8px;margin:6px 0;font-weight:800}
+    .trow .colon{text-align:center}
+    .trow .val{text-align:right;font-weight:700}
+    .error{color:#b00020;font-weight:700;margin-top:10px}
+    .ok{color:#0a7b2e;font-weight:700;margin-top:10px}
   </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topinfo">
+  <div class="topBar">
     <div>
-      <h2>Teklif Satırları <span class="muted">(iskonto değişince net otomatik, neti istersen elle de değiştir)</span></h2>
-      <div class="muted" id="offerMeta"></div>
+      <h1>Teklif Onay</h1>
+      <div class="muted" id="meta"></div>
     </div>
-    <div class="badge" id="currencyBadge"></div>
-  </div>
-
-  <table>
-    <thead>
-      <tr>
-        <th style="width:18%">Kod</th>
-        <th>Ürün</th>
-        <th class="center" style="width:8%">Çap</th>
-        <th class="center" style="width:8%">Adet</th>
-        <th class="right" style="width:12%">Liste Fiyatı</th>
-        <th class="center" style="width:12%">İskonto %</th>
-        <th class="center" style="width:12%">Net</th>
-        <th class="right" style="width:12%">Tutar</th>
-      </tr>
-    </thead>
-    <tbody id="linesBody"></tbody>
-  </table>
-
-  <div class="totalsRow">
-    <div class="totals">
-      <div class="tline">
-        <div class="tlabel">Ara Toplam</div><div class="tcolon">:</div><div class="tval" id="subTotal">0,00</div>
-      </div>
-      <div class="tline">
-        <div class="tlabel">KDV %20</div><div class="tcolon">:</div><div class="tval" id="kdv">0,00</div>
-      </div>
-      <div class="tline">
-        <div class="tlabel">Genel Toplam</div><div class="tcolon">:</div><div class="tval" id="grandTotal">0,00</div>
-      </div>
-
-      <div class="actions">
-        <button class="btn" id="btnRecalc">Yeniden Hesapla</button>
-        <button class="btn primary" id="btnApprove">Siparişi Onayla</button>
-      </div>
+    <div>
+      <span class="pill" id="statusPill">yükleniyor...</span>
     </div>
   </div>
 
-  <div class="error" id="err"></div>
+  <div class="row" style="margin-top:14px;">
+    <div class="card">
+      <div class="muted">Teklif Satırları (iskonto değişince net otomatik, neti istersen elle de değiştir)</div>
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th style="width:14%">Kod</th>
+            <th>Ürün</th>
+            <th class="c" style="width:8%">Çap</th>
+            <th class="c" style="width:8%">Adet</th>
+            <th class="r" style="width:12%">Liste Fiyatı</th> <!-- ✅ -->
+            <th class="c" style="width:10%">İskonto %</th>
+            <th class="r" style="width:12%">Net</th>
+            <th class="r" style="width:12%">Tutar</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div class="totals" id="totals"></div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:14px;">
+        <button class="btn secondary" id="btnRecalc" type="button">Yeniden Hesapla</button>
+        <button class="btn" id="btnApprove" type="button">Siparişi Onayla</button>
+      </div>
+
+      <div class="error" id="err" style="display:none;"></div>
+      <div class="ok" id="ok" style="display:none;"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-  // ✅ kendi webhookların
-  const GET_URL = "https://4idgxnjs.rpcl.app/webhook/offer-get";
-  const APPROVE_URL = "https://4idgxnjs.rpcl.app/webhook/offer-approve";
+  // ✅ Burayı kendi n8n URL’lerinle değiştir
+  const OFFER_GET_URL = "https://4idgxnjs.rpcl.app/webhook-test/offer-get";
+  const APPROVE_URL   = "https://4idgxnjs.rpcl.app/webhook-test/offer-approve";
 
   const qs = new URLSearchParams(location.search);
-  const offerId = (qs.get("offerId") || "").trim();
-  const adminKey = (qs.get("adminKey") || "").trim();
+  const offerId = qs.get("offerId") || "";
+  const adminKey = qs.get("adminKey") || "";
 
+  const metaEl = document.getElementById("meta");
+  const statusPill = document.getElementById("statusPill");
+  const tbody = document.querySelector("#tbl tbody");
+  const totalsEl = document.getElementById("totals");
   const errEl = document.getElementById("err");
-  const linesBody = document.getElementById("linesBody");
-  const subEl = document.getElementById("subTotal");
-  const kdvEl = document.getElementById("kdv");
-  const grandEl = document.getElementById("grandTotal");
-  const metaEl = document.getElementById("offerMeta");
-  const curBadge = document.getElementById("currencyBadge");
+  const okEl = document.getElementById("ok");
+  const btnApprove = document.getElementById("btnApprove");
+  const btnRecalc = document.getElementById("btnRecalc");
+
+  function showErr(msg){ errEl.style.display="block"; errEl.textContent=msg; okEl.style.display="none"; }
+  function showOk(msg){ okEl.style.display="block"; okEl.textContent=msg; errEl.style.display="none"; }
+  function money(n, cur){
+    const v = Number(n||0);
+    return v.toFixed(2).replace(".", ",") + " " + (cur||"€");
+  }
+
+  // Rule: iskonto değişince net otomatik; net elle değişince manualNet=true
+  function calcNet(liste, iskonto){
+    const L = Number(liste||0);
+    const d = Number(iskonto||0);
+    return L * (1 - d/100);
+  }
 
   let offer = null;
 
-  function setError(msg){
-    errEl.textContent = msg || "";
-  }
+  async function loadOffer(){
+    if(!offerId || !adminKey){
+      showErr("Geçersiz link (offerId/adminKey eksik).");
+      return;
+    }
 
-  // --- sayı parse ---
-  function parseTRNumber(v) {
+    statusPill.textContent = "yükleniyor...";
+    metaEl.textContent = "";
+
+    const url = `${OFFER_GET_URL}?offerId=${encodeURIComponent(offerId)}&adminKey=${encodeURIComponent(adminKey)}`;
+    const res = await fetch(url, { method:"GET" });
+    const data = await res.json();
+
+    if(!data || !data.success || !data.offer){
+      throw new Error("Teklif verisi alınamadı.");
+    }
+
+    offer = data.offer;
+
+    function parseTRNumber(v) {
     if (v === null || v === undefined) return 0;
     if (typeof v === "number" && Number.isFinite(v)) return v;
 
     let s = String(v).trim();
+
+    // Para birimi ve boşlukları sil (₺, €, TRY, EUR vs)
     s = s.replace(/[^\d.,-]/g, "");
 
+    // "1.234,56" => "1234.56"
     if (s.includes(".") && s.includes(",")) {
       s = s.replace(/\./g, "").replace(",", ".");
     } else if (s.includes(",")) {
+      // "1,14" => "1.14"
       s = s.replace(",", ".");
     }
 
@@ -137,225 +148,194 @@
     return Number.isFinite(n) ? n : 0;
   }
 
-  function fmtTR(n){
-    const x = Number(n || 0);
-    return x.toFixed(2).replace(".", ",");
+  // offer.lines içindeki tüm numeric alanları düzelt
+  function normalizeOfferLines(offer) {
+    offer.lines = (offer.lines || []).map(l => ({
+      ...l,
+      adet: parseTRNumber(l.adet),
+      liste: parseTRNumber(l.liste),
+      iskonto: parseTRNumber(l.iskonto),
+      net: parseTRNumber(l.net),
+      tutar: parseTRNumber(l.tutar) // boşsa birazdan zaten net*adet ile hesaplanacak
+    }));
+  }
+    normalizeOfferLines(offer); // varsa kalsın
+    hydrateLines(offer);   
+    renderTable();
+    recalcTotals();     
+    const cur = offer.currency || "€";                 // ✅ para birimi buradan
+    statusPill.textContent = offer.status || "draft";
+    metaEl.textContent = `Teklif No: ${offer.offerId} • Para birimi: ${cur} • Müşteri: ${offer.customerName || "-"} • Telefon: ${(offer.phone||"").replace(/^whatsapp:/i,"") || "-"}`;
+
+
   }
 
-  function cur(){
-    return (offer && offer.currency) ? offer.currency : "€";
+  function renderTable(){
+    const cur = offer.currency || "€";
+    tbody.innerHTML = "";
+
+    (offer.lines || []).forEach((l, idx) => {
+      const tr = document.createElement("tr");
+
+      const liste = Number(l.liste||0);
+      const iskonto = Number(l.iskonto||0);
+      const net = Number(l.net||0);
+      const adet = Number(l.adet||0);
+
+      tr.innerHTML = `
+        <td><strong>${l.kod||""}</strong></td>
+        <td>${l.urun||""}</td>
+        <td class="c">${l.cap||""}</td>
+        <td class="c">${adet}</td>
+
+        <td class="r">${money(liste, cur)}</td>
+
+        <td class="c">
+          <input type="number" min="0" max="100" step="1" value="${iskonto}" data-idx="${idx}" data-field="iskonto">
+        </td>
+
+        <td class="r">
+          <input type="number" step="0.01" value="${net}" data-idx="${idx}" data-field="net">
+        </td>
+
+        <td class="r" data-idx="${idx}" data-field="tutar">${money((net*adet), cur)}</td>
+      `;
+
+      tbody.appendChild(tr);
+    });
+
+    // Event binding
+    tbody.querySelectorAll('input[data-field="iskonto"]').forEach(inp=>{
+      inp.addEventListener("input", e=>{
+        const i = Number(e.target.dataset.idx);
+        const val = Number(e.target.value||0);
+        offer.lines[i].iskonto = val;
+
+        // ✅ iskonto değişince net otomatik (manualNet=false)
+        offer.lines[i].net = calcNet(offer.lines[i].liste, val);
+        offer.lines[i].manualNet = false;
+
+        // net input’u da güncelle
+        const netInp = tbody.querySelector(`input[data-idx="${i}"][data-field="net"]`);
+        if(netInp) netInp.value = Number(offer.lines[i].net||0).toFixed(2);
+
+        updateLineTotal(i);
+        recalcTotals();
+      });
+    });
+
+    tbody.querySelectorAll('input[data-field="net"]').forEach(inp=>{
+      inp.addEventListener("input", e=>{
+        const i = Number(e.target.dataset.idx);
+        const val = Number(e.target.value||0);
+        offer.lines[i].net = val;
+
+        // ✅ net elle değişti: manualNet=true
+        offer.lines[i].manualNet = true;
+
+        updateLineTotal(i);
+        recalcTotals();
+      });
+    });
   }
 
-  // ✅ ilk yüklemede “tutar = net*adet” doldur
-  function hydrateLines(offerObj){
-    offerObj.lines = (offerObj.lines || []).map(l => {
+  function updateLineTotal(i){
+    const cur = offer.currency || "€";
+    const l = offer.lines[i];
+    const tutar = Number(l.net||0) * Number(l.adet||0);
+    l.tutar = tutar;
+
+    const cell = tbody.querySelector(`td[data-idx="${i}"][data-field="tutar"]`);
+    if(cell) cell.textContent = money(tutar, cur);
+  }
+
+    function hydrateLines(offer) {
+    offer.lines = (offer.lines || []).map(l => {
       const adet = parseTRNumber(l.adet);
       const liste = parseTRNumber(l.liste);
       const iskonto = parseTRNumber(l.iskonto);
       const net = parseTRNumber(l.net);
 
-      // ilk açılışta tutar boş/string bile olsa: yeniden hesapla
+      // ✅ kritik: ilk açılışta tutar yoksa / stringse hesapla
       const tutar = net * adet;
 
       return { ...l, adet, liste, iskonto, net, tutar };
     });
   }
 
-  function computeNetFromDiscount(l){
-    // liste fiyatı varsa iskonto ile net
-    const liste = parseTRNumber(l.liste);
-    const isk = parseTRNumber(l.iskonto);
-    const net = liste * (1 - (isk/100));
-    return net;
-  }
-
-  function recalcLineTotals(){
-    (offer.lines || []).forEach(l => {
-      // manualNet false ise iskonto değişince net otomatik
-      if (!l.manualNet) {
-        l.net = computeNetFromDiscount(l);
-      }
-      l.tutar = parseTRNumber(l.net) * parseTRNumber(l.adet);
-    });
-  }
-
   function recalcTotals(){
-    const sub = (offer.lines || []).reduce((sum, l) => sum + parseTRNumber(l.tutar), 0);
+    const cur = offer.currency || "€";
+    const sub = (offer.lines||[]).reduce((s,l)=> s + (Number(l.tutar||0)), 0);
     const kdv = sub * 0.20;
-    const gen = sub + kdv;
+    const grand = sub + kdv;
 
-    subEl.textContent = `${fmtTR(sub)} ${cur()}`;
-    kdvEl.textContent = `${fmtTR(kdv)} ${cur()}`;
-    grandEl.textContent = `${fmtTR(gen)} ${cur()}`;
+    totalsEl.innerHTML = `
+      <div class="trow"><div>Ara Toplam</div><div class="colon">:</div><div class="val">${money(sub, cur)}</div></div>
+      <div class="trow"><div>KDV %20</div><div class="colon">:</div><div class="val">${money(kdv, cur)}</div></div>
+      <div class="trow"><div>Genel Toplam</div><div class="colon">:</div><div class="val">${money(grand, cur)}</div></div>
+    `;
 
-    // offer.total da güncelle (backend isterse diye)
     offer.total = sub;
   }
 
-  function render(){
-    linesBody.innerHTML = "";
-
-    (offer.lines || []).forEach((l, idx) => {
-      const tr = document.createElement("tr");
-
-      const tdKod = document.createElement("td");
-      tdKod.className = "code";
-      tdKod.textContent = l.kod || "";
-      tr.appendChild(tdKod);
-
-      const tdUrun = document.createElement("td");
-      tdUrun.textContent = l.urun || "";
-      tr.appendChild(tdUrun);
-
-      const tdCap = document.createElement("td");
-      tdCap.className = "center";
-      tdCap.textContent = l.cap || "";
-      tr.appendChild(tdCap);
-
-      const tdAdet = document.createElement("td");
-      tdAdet.className = "center";
-      tdAdet.textContent = String(parseTRNumber(l.adet));
-      tr.appendChild(tdAdet);
-
-      const tdListe = document.createElement("td");
-      tdListe.className = "right";
-      tdListe.textContent = `${fmtTR(l.liste)} ${cur()}`;
-      tr.appendChild(tdListe);
-
-      const tdIsk = document.createElement("td");
-      tdIsk.className = "center";
-      const iskInp = document.createElement("input");
-      iskInp.type = "number";
-      iskInp.className = "small";
-      iskInp.min = "0";
-      iskInp.max = "100";
-      iskInp.step = "1";
-      iskInp.value = String(parseTRNumber(l.iskonto));
-
-      iskInp.addEventListener("input", () => {
-        l.iskonto = parseTRNumber(iskInp.value);
-        l.manualNet = false;     // ✅ iskonto değiştiyse net otomatik moda dön
-        recalcLineTotals();
-        render();                // satırları güncelle
-        recalcTotals();
-      });
-
-      tdIsk.appendChild(iskInp);
-      tr.appendChild(tdIsk);
-
-      const tdNet = document.createElement("td");
-      tdNet.className = "center";
-      const netInp = document.createElement("input");
-      netInp.type = "number";
-      netInp.step = "0.01";
-      netInp.value = String(parseTRNumber(l.net).toFixed(2));
-      netInp.addEventListener("input", () => {
-        l.net = parseTRNumber(netInp.value);
-        l.manualNet = true;      // ✅ net elle değişti
-        l.tutar = parseTRNumber(l.net) * parseTRNumber(l.adet);
-        render();
-        recalcTotals();
-      });
-      tdNet.appendChild(netInp);
-      tr.appendChild(tdNet);
-
-      const tdTutar = document.createElement("td");
-      tdTutar.className = "right";
-      tdTutar.textContent = `${fmtTR(l.tutar)} ${cur()}`;
-      tr.appendChild(tdTutar);
-
-      linesBody.appendChild(tr);
-    });
-
-    curBadge.textContent = `Para birimi: ${cur()}`;
-    metaEl.textContent = `offerId: ${offer.offerId || ""} • status: ${offer.status || ""}`;
-  }
-
-  async function loadOffer(){
-    setError("");
-    if (!offerId) return setError("offerId eksik");
-    if (!adminKey) return setError("adminKey eksik");
-
-    const url = `${GET_URL}?offerId=${encodeURIComponent(offerId)}&adminKey=${encodeURIComponent(adminKey)}`;
-    const res = await fetch(url, { method: "GET" });
-
-    const text = await res.text();
-    let data;
-    try { data = JSON.parse(text); } catch(e){
-      console.error("Bad JSON:", text);
-      return setError("Teklif verisi JSON değil (offer-get response kontrol et).");
-    }
-
-    if (!data || !data.success || !data.offer) return setError("Teklif verisi alınamadı.");
-
-    offer = data.offer;
-
-    // ✅ kritik: ilk yüklemede satırlar numeric + tutar hesaplı
-    hydrateLines(offer);
-
-    // ✅ toplamlar hemen doğru gelsin
-    recalcLineTotals();
-    render();
+  btnRecalc.addEventListener("click", ()=>{
+    renderTable();
     recalcTotals();
-  }
-
-  async function approve(){
-    setError("");
-    if (!offer) return;
-
-    const payload = {
-      offerId: offer.offerId,
-      adminKey,
-      action: "approve",
-      // ✅ senin istediğin gibi lines gönderiyoruz
-      lines: (offer.lines || []).map(l => ({
-        kod: l.kod,
-        urun: l.urun,
-        cap: l.cap,
-        adet: parseTRNumber(l.adet),
-        liste: parseTRNumber(l.liste),
-        iskonto: parseTRNumber(l.iskonto),
-        net: parseTRNumber(l.net),
-        tutar: parseTRNumber(l.tutar),
-        manualNet: !!l.manualNet
-      })),
-      total: parseTRNumber(offer.total),
-      currency: cur(),
-      phone: offer.phone || "",
-      customerName: offer.customerName || ""
-    };
-
-    const res = await fetch(APPROVE_URL, {
-      method: "POST",
-      headers: {"Content-Type":"application/json"},
-      body: JSON.stringify(payload)
-    });
-
-    const txt = await res.text();
-    let out;
-    try { out = JSON.parse(txt); } catch(e){ out = null; }
-
-    if (!res.ok) {
-      console.error(txt);
-      return setError("Onay başarısız: " + (out?.message || txt));
-    }
-
-    alert("Sipariş onaylandı ✅");
-  }
-
-  document.getElementById("btnRecalc").addEventListener("click", () => {
-    if (!offer) return;
-    recalcLineTotals();
-    render();
-    recalcTotals();
+    showOk("Hesap güncellendi.");
   });
 
-  document.getElementById("btnApprove").addEventListener("click", approve);
+  btnApprove.addEventListener("click", async ()=>{
+    try{
+      btnApprove.disabled = true;
+      showOk("Onay gönderiliyor...");
 
-  loadOffer().catch(e => {
-    console.error(e);
-    setError("Teklif yüklenemedi: " + (e?.message || String(e)));
+      const payload = {
+        offerId,
+        adminKey,
+        action: "approve",
+        lines: (offer.lines||[]).map(l => ({
+          kod: l.kod,
+          urun: l.urun,
+          cap: l.cap,
+          adet: Number(l.adet||0),
+          liste: Number(l.liste||0),
+          iskonto: Number(l.iskonto||0),
+          net: Number(l.net||0),
+          manualNet: !!l.manualNet,
+          tutar: Number(l.tutar||0),
+        })),
+        total: Number(offer.total||0),
+        currency: offer.currency || "€",           // ✅ para birimi doğru gönder
+        phone: offer.phone || "",
+        customerName: offer.customerName || ""
+      };
+
+      const res = await fetch(APPROVE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json().catch(()=> ({}));
+      if(!res.ok || !data || data.success === false){
+        throw new Error(data.error || data.message || "Approve hatası");
+      }
+
+      showOk("Onaylandı. PDF hazırlanıp müşteriye gönderilecektir.");
+    }catch(e){
+      showErr(String(e.message || e));
+    }finally{
+      btnApprove.disabled = false;
+    }
   });
+
+  (async ()=>{
+    try{
+      await loadOffer();
+    }catch(e){
+      showErr("Teklif yüklenemedi: " + (e.message || e));
+    }
+  })();
 </script>
 </body>
 </html>
