@@ -75,6 +75,27 @@
 </div>
 
 <script>
+
+      function parseTRNumber(v) {
+    if (v === null || v === undefined) return 0;
+    if (typeof v === "number" && Number.isFinite(v)) return v;
+
+    let s = String(v).trim();
+
+    // Para birimi ve boşlukları sil (₺, €, TRY, EUR vs)
+    s = s.replace(/[^\d.,-]/g, "");
+
+    // "1.234,56" => "1234.56"
+    if (s.includes(".") && s.includes(",")) {
+      s = s.replace(/\./g, "").replace(",", ".");
+    } else if (s.includes(",")) {
+      // "1,14" => "1.14"
+      s = s.replace(",", ".");
+    }
+
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
   // ✅ Burayı kendi n8n URL’lerinle değiştir
   const OFFER_GET_URL = "https://4idgxnjs.rpcl.app/webhook-test/offer-get";
   const APPROVE_URL   = "https://4idgxnjs.rpcl.app/webhook-test/offer-approve";
@@ -127,26 +148,7 @@
 
     offer = data.offer;
 
-    function parseTRNumber(v) {
-    if (v === null || v === undefined) return 0;
-    if (typeof v === "number" && Number.isFinite(v)) return v;
 
-    let s = String(v).trim();
-
-    // Para birimi ve boşlukları sil (₺, €, TRY, EUR vs)
-    s = s.replace(/[^\d.,-]/g, "");
-
-    // "1.234,56" => "1234.56"
-    if (s.includes(".") && s.includes(",")) {
-      s = s.replace(/\./g, "").replace(",", ".");
-    } else if (s.includes(",")) {
-      // "1,14" => "1.14"
-      s = s.replace(",", ".");
-    }
-
-    const n = Number(s);
-    return Number.isFinite(n) ? n : 0;
-  }
 
   // offer.lines içindeki tüm numeric alanları düzelt
   function normalizeOfferLines(offer) {
@@ -263,20 +265,33 @@
     });
   }
 
-  function recalcTotals(){
+    function recalcTotals(){
     const cur = offer.currency || "€";
-    const sub = (offer.lines||[]).reduce((s,l)=> s + (Number(l.tutar||0)), 0);
+
+    const sub = (offer.lines || []).reduce((sum, l) => {
+      // 👇 kritik fark burada
+      const t = parseTRNumber(l.tutar); // "1,14 ₺" → 1.14
+      return sum + t;
+    }, 0);
+
     const kdv = sub * 0.20;
     const grand = sub + kdv;
 
     totalsEl.innerHTML = `
-      <div class="trow"><div>Ara Toplam</div><div class="colon">:</div><div class="val">${money(sub, cur)}</div></div>
-      <div class="trow"><div>KDV %20</div><div class="colon">:</div><div class="val">${money(kdv, cur)}</div></div>
-      <div class="trow"><div>Genel Toplam</div><div class="colon">:</div><div class="val">${money(grand, cur)}</div></div>
+      <div class="trow">
+        <div>Ara Toplam</div><div class="colon">:</div><div class="val">${money(sub, cur)}</div>
+      </div>
+      <div class="trow">
+        <div>KDV %20</div><div class="colon">:</div><div class="val">${money(kdv, cur)}</div>
+      </div>
+      <div class="trow">
+        <div>Genel Toplam</div><div class="colon">:</div><div class="val">${money(grand, cur)}</div>
+      </div>
     `;
 
     offer.total = sub;
   }
+
 
   btnRecalc.addEventListener("click", ()=>{
     renderTable();
