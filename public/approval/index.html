@@ -97,8 +97,8 @@
     return Number.isFinite(n) ? n : 0;
   }
   // ✅ Burayı kendi n8n URL’lerinle değiştir
-  const OFFER_GET_URL = "https://4idgxnjs.rpcl.app/webhook-test/offer-get";
-  const APPROVE_URL   = "https://4idgxnjs.rpcl.app/webhook-test/offer-approve";
+  const OFFER_GET_URL = "https://4idgxnjs.rpcl.app/webhook/offer-get";
+  const APPROVE_URL   = "https://4idgxnjs.rpcl.app/webhook/offer-approve";
 
   const qs = new URLSearchParams(location.search);
   const offerId = qs.get("offerId") || "";
